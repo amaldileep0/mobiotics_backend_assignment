@@ -1,8 +1,5 @@
 <?php
-/*
- Developed by RahulB
- TOML
-*/
+
 class CryptAES
 {
     protected $cipher     = MCRYPT_RIJNDAEL_128;
@@ -41,9 +38,7 @@ class CryptAES
         if (is_null($this->pad_method))
         {
             return $str;
-        }
-        else
-        {
+        } else {
             $func_name = __CLASS__ . '::' . $this->pad_method . '_' . $ext . 'pad';
             if (is_callable($func_name))
             {

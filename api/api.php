@@ -67,25 +67,11 @@ class API extends REST
 		}
 	}
 	
-	public function multid_sort($arr, $index)
-	{
-		$b = [];
-		$c = [];
-		foreach ($arr as $key => $value) {
-			$b[$key] = $value[$index];
-		}
-		arsort($b);
-		foreach ($b as $key => $value) {
-			$c[] = $arr[$key];
-		}
-		return $c;
-	}
-	
-	
 	private function signup()
 	{
-		if ($this->get_request_method() != "POST") {
-			$this->response('', 406);
+		
+		if($this->get_request_method() != "POST") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
 		}				  
 		
 		$name = isset($this->_request['name']) ? $this->_request['name'] : "";
@@ -208,6 +194,20 @@ class API extends REST
 
         return $diff === 0;
     }
+
+    public function multid_sort($arr, $index)
+	{
+		$b = [];
+		$c = [];
+		foreach ($arr as $key => $value) {
+			$b[$key] = $value[$index];
+		}
+		arsort($b);
+		foreach ($b as $key => $value) {
+			$c[] = $arr[$key];
+		}
+		return $c;
+	}
 
     protected function generateSalt($cost = 13)
     {
@@ -347,8 +347,9 @@ class API extends REST
 
 	private function login()
 	{
-	   	if($this->get_request_method() != "POST") {
-			$this->response('', 406);
+	   	
+		if($this->get_request_method() != "POST") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
 		}
 
 		$email = isset($this->_request['email']) ? $this->_request['email'] : "";
@@ -373,23 +374,31 @@ class API extends REST
 		$result = $stmt->get_result();
 		if($result->num_rows > 0 ) {
 			while($row = $result->fetch_assoc()) {
-		  		$response["success"] = true;
 				$response["userId"]  = $row['id'];
 				$response["name"] = $row['name'];
 				$response["email"] = $row['email'];
 				$response["message"] = "Login Successfull";
 				$pass = $row["password"];
 				if ($this->validatePassword($password, $pass)) { 
-	    		 	$this->sessionStart($response['userId'], $response['email'], $response['name']);
-					$this->response($this->json($response), 200);
+					$apiToken = $this->generateRandomString();
+					$update = $this->_db->prepare("UPDATE users SET api_token = ? WHERE id = ?");
+					$update->bind_param("si", $apiToken, $row['id']); 
+					$update->execute();
+					if ($update->affected_rows > 0) {
+						$response['token'] = $apiToken;
+						$this->sessionStart($response['userId'], $response['email'], $response['name']);
+						$this->response($this->json([ "success" => true ,"user" => $response]), 200);
+					} else {
+						$error = ['success' => false, "message" => "Sorry!. Something didn't go as planned"];
+						$this->response($this->json($error), 401);	
+					}
 				} else {
-	
 					$error = ['success' => false, "message" => "Incorrect username or password"];
-					$this->response($this->json($error), 400);		
+					$this->response($this->json($error), 401);		
 				}
 			}	
 		}
-		$this->response($this->json(['success' => false, "message" => "Incorrect username or password"]), 400);			  
+		$this->response($this->json(['success' => false, "message" => "Incorrect username or password"]), 401);			  
 	}
 		
 	private function sessionStart($userId, $email, $name)
@@ -409,7 +418,7 @@ class API extends REST
 	private function forgotPassword()
 	{ 
 		if($this->get_request_method() != "POST") {
-			$this->response('', 406);
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
 		}
 		$email = isset($this->_request['email']) ? $this->_request['email'] : "";
 	   	if (!$email) {
@@ -545,6 +554,11 @@ class API extends REST
 	
 	private function addRequest()
 	{	
+
+		if($this->get_request_method() != "POST") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
+		}
+
 		$error = [];
 		$fields = [
 			'title' => ['required' => true],
@@ -641,7 +655,12 @@ class API extends REST
     }
 	
 	private function updateRequest()
-	{
+	{	
+
+		if($this->get_request_method() != "POST") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
+		}
+
 		$error = [];
 		$requestId = isset($_GET['id']) ? $_GET['id'] : null;
 
@@ -736,14 +755,19 @@ class API extends REST
 	}	
 	
 	private function deleteRequest()
-	{
-		$requestId = isset($this->_request['requestId']) ? $this->_request['requestId'] : null;
+	{	
+
+		if($this->get_request_method() != "POST") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
+		}
+
+		$requestId = isset($this->_request['id']) ? $this->_request['id'] : null;
 		
 		if(!$requestId){
 			$this->response($this->json(['success' => false, "message" => "Request resource not found"]), 400);
 		}
 		
-		$stmt = $this->_db->prepare("DELETE FROM request WHERE requestId = ?");
+		$stmt = $this->_db->prepare("DELETE FROM request WHERE id = ?");
 		$stmt->bind_param("i", $requestId);
 		$stmt->execute();
 		if($stmt->affected_rows > 0) {
