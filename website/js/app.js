@@ -113,7 +113,7 @@ $(function () {
                             content += '<td>' + data[i].requestStatus + '</td>';
                             content += '<td>' + data[i].created + '</td>';
                             content += '<td>' + data[i].closed + '</td>';
-                            content += '<td><a href="#" class="edit-request" data-id="'+ data[i].id +'">Update</a> <a href="#" class="delete-request" data-id="'+ data[i].id +'">Delete</a></td>';
+                            content += '<td><a href="#" id="edit-request" data-id="'+ data[i].id +'">Update</a> <a href="#" id="delete-request" data-id="'+ data[i].id +'">Delete</a></td>';
                             content += '</tr>';
                         }
                     } else {
@@ -130,6 +130,13 @@ $(function () {
         });
         requestListingDiv.show();
     }
+
+    $('#delete-request').click(function(event) {
+        event.preventDefault();
+        alert('hai')
+        var id = $(this).attr("data-id");
+        console.log(id)
+    });
 
     $('#forget-password-form').submit(function(e) {
         e.preventDefault();
