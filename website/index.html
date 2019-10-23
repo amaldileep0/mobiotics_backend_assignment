@@ -36,6 +36,12 @@
         </div>
     </nav>
     <div class="main-container">
+        <div class="error-msg" style="display: none;">
+            <div class="alert alert-danger" id="errors"></div>
+        </div>
+        <div class="success-msg" style="display: none;">
+            <div class="alert alert-success" id="success"></div>
+        </div>
         <main class="login" id="_login" style="display: block;">
             <div class="cotainer">
                 <div class="row justify-content-center">
@@ -47,17 +53,17 @@
                                     <div class="form-group row">
                                         <label for="email_address" class="col-md-4 col-form-label text-md-right">E-Mail Address</label>
                                         <div class="col-md-6">
-                                            <input type="text" id="login_email_address" class="form-control" name="login_email_address" required autofocus>
+                                            <input type="text" id="login_email_address" class="form-control" name="email" required autofocus>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="password" class="col-md-4 col-form-label text-md-right">Password</label>
                                         <div class="col-md-6">
-                                            <input type="password" id="login_password" class="form-control" name="login_password" required>
+                                            <input type="password" id="login_password" class="form-control" name="password" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6 offset-md-4">
-                                        <button type="submit" class="btn btn-primary">Login</button>
+                                        <button type="submit" class="btn btn-primary login-button">Login</button>
                                         <a href="#" class="btn btn-link forget_password_link">
                                         Forgot Your Password?
                                     </a>
@@ -86,19 +92,19 @@
                                     <div class="form-group row">
                                         <label for="register_email" class="col-md-4 col-form-label text-md-right">Email</label>
                                         <div class="col-md-6">
-                                            <input type="text" id="register_email" class="form-control" name="register_email" required >
+                                            <input type="text" id="register_email" class="form-control" name="email" required >
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="register_password" class="col-md-4 col-form-label text-md-right">Password</label>
                                         <div class="col-md-6">
-                                            <input type="password" id="register_password" class="form-control" name="register_password" required>
+                                            <input type="password" id="password" class="form-control" name="password" required>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="register_confirm_password" class="col-md-4 col-form-label text-md-right">Confirm Password</label>
                                         <div class="col-md-6">
-                                            <input type="password" id="register_confirm-password" class="form-control" name="register_confirmPassword" required>
+                                            <input type="password" id="register_confirm-password" class="form-control" name="confirmPassword" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6 offset-md-4">
@@ -172,35 +178,25 @@
                         <div class="card">
                             <div class="card-header">Listing</div>
                             <div class="card-body">
-                            <table class="table table-striped">
+                            <table class="table table-striped" id="request-listing-table">
                                 <thead>
                                     <tr>
-                                      <th scope="col">#</th>
-                                      <th scope="col">First</th>
-                                      <th scope="col">Last</th>
-                                      <th scope="col">Handle</th>
+                                      <th scope="col">ID</th>
+                                      <th scope="col">Title</th>
+                                      <th scope="col">Category</th>
+                                      <th scope="col">Initiator</th>
+                                      <th scope="col">Initiator Email</th>
+                                      <th scope="col">Assignee</th>
+                                      <th scope="col">Priority</th>
+                                      <th scope="col">Request Status</th>
+                                      <th scope="col">Closed</th>
+                                      <th scope="col">Created</th>
+                                      <th scope="col">Action</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>
-                                      <th scope="row">1</th>
-                                      <td>Mark</td>
-                                      <td>Otto</td>
-                                      <td>@mdo</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">2</th>
-                                      <td>Jacob</td>
-                                      <td>Thornton</td>
-                                      <td>@fat</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">3</th>
-                                      <td>Larry</td>
-                                      <td>the Bird</td>
-                                      <td>@twitter</td>
-                                    </tr>
-                                </tbody>
+                                    
+                                  </tbody>
                             </table>
                             </div>
                         </div>
@@ -292,6 +288,7 @@
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

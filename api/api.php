@@ -120,8 +120,14 @@ class API extends REST
 			$stmt = $this->_db->prepare("INSERT INTO users (name, email, password, createdAt) VALUES (?, ?, ?, ?)");
 			$stmt->bind_param("sssi", $name, $email, $password, time()); 
 			$stmt->execute();
-			$result["message"] = "Registration successfull. Please login to continue.";	
-			$this->response($this->json($result), 200);
+			if ($stmt->affected_rows > 0) {
+				$result['success'] = true;
+				$result["message"] = "Registration successfull. Please login to continue.";	
+				$this->response($this->json($result), 200);
+			} else {
+				$this->response($this->json(["success" => false, "message" => "Something went wrong"]), 500);
+			}
+			
 		}
 		$this->response($this->json(["success" => false, "message" => "Internal server error"]), 500);
 	}
@@ -438,7 +444,6 @@ class API extends REST
 				$name = $row["name"];
 				$email = $row["email"];	
 				$passwordResetToken = $this->generatePasswordResetToken();
-
 				$update = $this->_db->prepare("UPDATE users SET passwordResetToken = ? WHERE id = ?");
 				$update->bind_param("si", $passwordResetToken, $row['id']); 
 				$update->execute();
@@ -489,7 +494,7 @@ class API extends REST
 					if ($sent) {
 						$result = [];
 						$result["success"] = true;
-						$result["message"] = "A password reset link is sent to your email";					
+						$result["message"] = "A password reset link is sent to your email.Please follow the instruction";					
 						$this->response($this->json($result), 200);
 					} 
 				} 
