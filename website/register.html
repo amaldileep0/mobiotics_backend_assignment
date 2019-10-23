@@ -36,37 +36,46 @@
         </div>
     </nav>
     <div class="main-container">
-        <main class="login" id="_login">
-            <div class="cotainer">
+        <main class="register" id="_register">
+            <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header">Login</div>
-                            <div class="card-body"> 
+                            <div class="card-header">Register</div>
+                            <div class="card-body">
                                 <div class="error-msg" style="display: none;">
                                     <div class="alert alert-danger" id="errors"></div>
                                 </div>
                                 <div class="success-msg" style="display: none;">
                                     <div class="alert alert-success" id="success"></div>
                                 </div>
-                                <form action="#" method="post" name="loginForm" id="login-form">
+                                <form action="#" method="post" name="registerForm" id="register-form">
                                     <div class="form-group row">
-                                        <label for="email_address" class="col-md-4 col-form-label text-md-right">E-Mail Address</label>
+                                        <label for="name" class="col-md-4 col-form-label text-md-right">Name</label>
                                         <div class="col-md-6">
-                                            <input type="text" id="login_email_address" class="form-control" name="email" required autofocus>
+                                            <input type="text" id="name" class="form-control" name="name" required>
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="password" class="col-md-4 col-form-label text-md-right">Password</label>
+                                        <label for="register_email" class="col-md-4 col-form-label text-md-right">Email</label>
                                         <div class="col-md-6">
-                                            <input type="password" id="login_password" class="form-control" name="password" required>
+                                            <input type="text" id="register_email" class="form-control" name="email" required >
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="register_password" class="col-md-4 col-form-label text-md-right">Password</label>
+                                        <div class="col-md-6">
+                                            <input type="password" id="register_password" class="form-control" name="password" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="register_confirm_password" class="col-md-4 col-form-label text-md-right">Confirm Password</label>
+                                        <div class="col-md-6">
+                                            <input type="password" id="register_confirm-password" class="form-control" name="confirmPassword" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6 offset-md-4">
-                                        <button type="submit" class="btn btn-primary login-button">Login</button>
-                                        <a href="forgot-password.html" class="btn btn-link forget_password_link">
-                                        Forgot Your Password?
-                                    </a>
+                                        <button type="submit" class="btn btn-primary">Register</button>
                                     </div>
                                 </form>
                             </div>

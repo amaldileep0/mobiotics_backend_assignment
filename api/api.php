@@ -11,7 +11,7 @@ class API extends REST
 	public $data = "";
 	const DB_SERVER 	= "localhost";
 	const DB_USER 		= "root";
-	const DB_PASSWORD 	= "pass";
+	const DB_PASSWORD 	= "Password#1";
 	const DB 			= "test_mb";		
 
 	private $_db = NULL;
@@ -56,6 +56,9 @@ class API extends REST
 					break;
 				case 'listrequest':
 					$this->listRequest();
+					break;
+				case 'getrequest':
+					$this->getRequest();
 					break;
 				case 'deleterequest':
 					$this->deleteRequest();
@@ -577,14 +580,14 @@ class API extends REST
 			'created' => ['required' => true]
 		];
 		foreach ($fields  as $key => $field) {
-            if (array_key_exists($key, $this->_request)) {
+            if (array_key_exists($key, $this->_request) && !empty($this->_request[$key])) {
             	if(!in_array($key, ['closedDate','created'])) {
             		$fields[$key]['value'] = $this->_request[$key];
             	} else {
             		$fields[$key]['value'] = strtotime($this->_request[$key]);
             	}
             } else if($field['required']) {
-            	$error[$key]['message'] = ucwords($key). " must not be blank";
+            	$error['message'][] = ucwords($key). " must not be blank";
             }
         }
 		
@@ -595,13 +598,15 @@ class API extends REST
 		if(($priority = $this->getRequestPriority($fields['priority']['value'])) !== null) {
 			$fields['priority']['value'] = $priority;
 		} else {
-			$this->response($this->json(["success" => false, "error" => ['priority' => ['message' => 'Invalid Priority']] ]), 400);		
+			$error['message'][] = "Invalid Priority";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);		
 		}
 
 		if(($status = $this->getRequestStatus($fields['requestStatus']['value'])) !== null) {
 			$fields['requestStatus']['value'] = $status;
 		} else {
-			$this->response($this->json(["success" => false, "error" => ['requestStatus' => ['message' => 'Invalid Status']] ]), 400);	
+			$error['message'][] = "Invalid Request Status";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);	
 		}
 
 		$stmt = $this->_db->prepare("INSERT INTO request 
@@ -639,23 +644,31 @@ class API extends REST
 	}
 
 	
-    protected function getRequestStatus($status = null)
+    protected function getRequestStatus($status = null, $flip = false)
     {	
         $statuses = [
             'CREATED' => 1,
             'ASSIGNED' => 2,
             'CLOSED' => 3
         ];
+        if($flip) {
+        	$statuses = array_flip($statuses);
+        }
         return array_key_exists($status, $statuses) ? $statuses[$status] : null;
     }
 
-    protected function getRequestPriority($status = null)
+    protected function getRequestPriority($status = null, $flip = false)
     {	
         $statuses = [
             'HIGH' => 1,
             'NORMAL' => 2,
             'LOW' => 3
         ];
+
+        if($flip) {
+        	$statuses = array_flip($statuses);
+        }
+
         return array_key_exists($status, $statuses) ? $statuses[$status] : null;
     }
 	
@@ -756,7 +769,22 @@ class API extends REST
 		$stmt = $this->_db->prepare("SELECT * FROM request ORDER BY id DESC");
 		$stmt->execute();
 		$arr = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-		$this->response($this->json([ "success" => true ,"data" => $arr]), 200);
+		$result = [];
+		if (!empty($arr)) {
+ 			foreach ($arr as $key => $value) {
+ 				$result[$key]['id'] = $value['id'];
+ 				$result[$key]['title'] = $value['title'];
+ 				$result[$key]['category'] = $value['category'];
+ 				$result[$key]['initiator'] = $value['initiator'];
+ 				$result[$key]['initiatorEmail'] = $value['initiatorEmail'];
+ 				$result[$key]['assignee'] = $value['assignee']; 
+ 				$result[$key]['priority'] = $this->getRequestPriority($value['priority'], true);
+ 				$result[$key]['requestStatus'] = $this->getRequestStatus($value['requestStatus'], true);
+ 				$result[$key]['closed'] = date('d/M/Y', $value['closed']);
+ 				$result[$key]['created'] =  date('d/M/Y', $value['created']);
+ 			}
+		}
+		$this->response($this->json([ "success" => true ,"data" => $result]), 200);
 	}	
 	
 	private function deleteRequest()
@@ -779,6 +807,39 @@ class API extends REST
 			$this->response($this->json(['success' => true, 'message' => 'Record removed successfully']), 200);	
 		} 
 		$this->response($this->json(['success' => false, 'message' => 'Unable to process your request']), 400);
+	}
+
+	private function getRequest()
+	{
+		if($this->get_request_method() != "GET") {
+			$this->response($this->json(['success' => false, "message" => "Http method not allowed"]), 406);
+		}
+
+		$id = isset($this->_request['id']) ? $this->_request['id'] : "";
+	   	if (!$id) {
+			$error = ['success' => false, "message" => "Required parameter missing"];
+			$this->response($this->json($error), 400);
+		}
+		$response = [];
+		$stmt = $this->_db->prepare("SELECT * FROM request WHERE id = ?");
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if($result->num_rows > 0 ) {
+			while($row = $result->fetch_assoc()) {
+				$response['id'] = $row['id'];
+ 				$response['title'] = $row['title'];
+ 				$response['category'] = $row['category'];
+ 				$response['initiator'] = $row['initiator'];
+ 				$response['initiatorEmail'] = $row['initiatorEmail'];
+ 				$response['assignee'] = $row['assignee']; 
+ 				$response['priority'] = $this->getRequestPriority($row['priority'], true);
+ 				$response['requestStatus'] = $this->getRequestStatus($row['requestStatus'], true);
+ 				$response['closed'] = date('d/M/Y', $row['closed']);
+ 				$response['created'] =  date('d/M/Y', $row['created']);
+			}
+		}
+		$this->response($this->json([ "success" => true, "data" => $response]), 200);
 	}
 	
 	private	function sortByOrder($a, $b)

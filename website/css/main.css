@@ -32,6 +32,10 @@ body{
     margin-right: 0;
 }
 
+.mtop10 {
+    margin-top: 10px;
+}
+
 .login-form {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
