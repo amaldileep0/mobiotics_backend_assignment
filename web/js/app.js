@@ -6,8 +6,7 @@ $(function () {
 	var forgetPasswordDiv = $('#_forget_password');
 	var resetPasswordDiv = $('#_reset_password');
     var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
-    var homeUrl = "http://13.59.231.78/mobiotics_backend_assignment/web/"
-
+   
     $('#login-form').submit(function(e) {
         e.preventDefault();
         $.ajax({
@@ -17,7 +16,7 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     localStorage.setItem("_identity", JSON.stringify(response.user));
-                    window.location.replace(homeUrl + "dashboard.html");
+                    window.location.replace("dashboard.html");
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
                     showErrors(error)
@@ -38,7 +37,7 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully processed your request";
-                    window.location.replace(homeUrl + "index.html");
+                    window.location.replace("index.html");
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
                     showErrors(error)

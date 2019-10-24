@@ -5,8 +5,6 @@ $(function () {
 	var requestListingDiv = $('#_request_listing');
 	var createRequestDiv  = $('#_create_request');
     var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
-    var homeUrl = "http://13.59.231.78/mobiotics_backend_assignment/web/"
-
     function getRequestData()
     {   
         $.ajax({
@@ -75,7 +73,7 @@ $(function () {
 
     $(document).on("click", ".logout_link", function() {
         localStorage.removeItem('_identity');
-        window.location.replace(homeUrl + "index.html");
+        window.location.replace("index.html");
     });
 
     $(document).on("click", "#edit-request", function() {
@@ -117,7 +115,7 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully added your request";
-                    window.location.replace(homeUrl + "dashboard.html");
+                    window.location.replace("dashboard.html");
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
                     showErrors(error)
@@ -138,7 +136,7 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully updated your request";
-                    window.location.replace(homeUrl + "dashboard.html");
+                    window.location.replace("dashboard.html");
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
                     showErrors(error)

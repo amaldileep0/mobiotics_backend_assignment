@@ -1,7 +1,5 @@
 <?php
 	
-require_once("CryptAES.php");	
-
 class REST 
 {
 		
@@ -24,7 +22,7 @@ class REST
 
 	public function response($data, $status)
 	{
-		//$this->_code = ($status) ? $status : 200;
+		$this->_code = ($status && $status == 401) ? $status : 200;
 		$this->set_headers();
 		echo $data;		
 		exit;
@@ -140,80 +138,7 @@ class REST
 		if ($a == $b) return 0;
 		 return ($a > $b) ? -1 : 1;
 	}
-			
-	function nicetime($date) 
-	{
-		if(empty($date)) {
-			return "No date provided";
-		}
-			
-		$periods         = array("second", "minute", "h", "d", "w", "month", "year", "decade");
-		$lengths         = array("60","60","24","7","4.35","12","10");
-		$now             = time();
-		$unix_date       = strtotime($date);
-			
-		// check validity of date
-		if(empty($unix_date)) {    
-			return "Bad date";
-		}
-		// is it future date or past date
-		if($now > $unix_date) {    
-			$difference     = $now - $unix_date;
-			$tense         = "";	
-		} else {
-			$difference     = $unix_date - $now;
-			$tense         = "";
-		}
-		for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-			$difference /= $lengths[$j];
-		}
-		$difference = round($difference);
-		if($difference != 1) {
-			$periods[$j].= "";
-		}
-		return "$difference $periods[$j] {$tense}";
-	}
-		
-	function time_elapsed_string($datetime, $full = false) 
-	{
-		$currentTime = gmdate("Y-m-d H:i:s");
-		echo $datetime;
-		$now = new DateTime;
-		$ago = new DateTime($datetime);
-		$diff = $now->diff($ago);
-		$diff->w = floor($diff->d / 7);
-		$diff->d -= $diff->w * 7;
-		$string = [
-			'y' => 'year',
-			'm' => 'month',
-			'w' => 'week',
-			'd' => 'day',
-			'h' => 'hour',
-			'i' => 'minute',
-			's' => 'second',
-		];
-		foreach ($string as $k => &$v) {
-			if ($diff->$k) {
-				$v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-			} else {
-				unset($string[$k]);
-			}
-		}
-		
-		if (!$full) $string = array_slice($string, 0, 1);
-			return $string ? implode(', ', $string) . ' ago' : 'just now';
-	}	
 	
-		
-	function strafter($string, $substring)
-	{
-		$pos = strpos($string, $substring);
-		if ($pos === false)
-		   return $string;
-		else  
-		   return(substr($string, $pos+strlen($substring)));
-	}
-
 	private function set_headers()
 	{
 		header("HTTP/1.1 ".$this->_code." ".$this->get_status_message());
