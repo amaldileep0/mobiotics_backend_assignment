@@ -31,7 +31,7 @@ $(function () {
                             content += '<td>' + data[i].requestStatus + '</td>';
                             content += '<td>' + data[i].created + '</td>';
                             content += '<td>' + data[i].closed + '</td>';
-                            content += '<td><a href="#" id="edit-request" data-id="'+ data[i].id +'">Update</a> <a href="#" id="delete-request" data-confirm="test ?" data-id="'+ data[i].id +'">Delete</a></td>';
+                            content += '<td><button type="button" class="btn btn-primary btn-sm" id="edit-request" data-toggle="modal" data-id="'+ data[i].id +'">Update</button> <a href="#" id="delete-request" role="button" class="btn btn-danger btn-sm" data-id="'+ data[i].id +'">Delete</a></td>';
                             content += '</tr>';
                         }
                     } else {
@@ -62,15 +62,27 @@ $(function () {
 
     $(document).on("click", "#edit-request", function() {
         var url = ajaxBaseUrl + "getRequest?id="+$(this).data("id")
+        $("form#create-request-form").prop('id','edit-request-form');
+        $('.modal-title').text('Update Request')
+        $(".request-form-submit").html('Update');
+        $('<input>').attr({type: 'hidden',id: 'request-id', name: 'id'}).appendTo('#edit-request-form');
         $.get( url, function( response ) {
             if (response.success) {
                 $.each(response.data, function (key, val) {
                     $('#title').val('tst')
                     $("input[name='"+ key +"']").val(val);
                 });
-                window.location.replace(homeUrl + "update-request.html");
+                $('#createRequestModal').modal('show');
             }
         });
+    });
+
+    $("#createRequestModal").on("hidden.bs.modal", function () {
+        document.getElementById('edit-request-form').reset();
+        $('#request-id').remove();
+        $("form#create-request-form").prop('id', 'create-request-form');
+        $('.modal-title').text('Create New Request')
+        $(".request-form-submit").html('Submit');
     });
 
     $('#create-request-form').submit(function(e) {
@@ -93,15 +105,6 @@ $(function () {
             }
        });
     });
-
-	function resetForm(formId) {
-        var arr = ['login-form', 'register-form', 'forget-password-form', 'reset-password-form'];
-        for (var key in arr) {
-            if (arr[key] != formId) {
-                document.getElementById(arr[key]).reset();
-            }
-        }
-	}
 
     function showErrors(response)
     {

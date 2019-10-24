@@ -11,7 +11,7 @@ class API extends REST
 	public $data = "";
 	const DB_SERVER 	= "localhost";
 	const DB_USER 		= "root";
-	const DB_PASSWORD 	= "Password#1";
+	const DB_PASSWORD 	= "pass";
 	const DB 			= "test_mb";		
 
 	private $_db = NULL;
