@@ -5,8 +5,8 @@ $(function () {
 	var registerDiv = $('#_register');
 	var forgetPasswordDiv = $('#_forget_password');
 	var resetPasswordDiv = $('#_reset_password');
-    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
-    var homeUrl = "http://13.59.231.78/app/web/"
+    var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
+    var homeUrl = "http://13.59.231.78/mobiotics_backend_assignment/web/"
 
     $('#login-form').submit(function(e) {
         e.preventDefault();

@@ -1,6 +1,6 @@
 $(function () {
     "use strict";
-    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
+    var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
 
     function getQueryParams() {
 	    var params = {},

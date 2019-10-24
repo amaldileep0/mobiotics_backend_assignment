@@ -12,8 +12,8 @@ class API extends REST
 	const DB_SERVER 	= "localhost";
 	const DB_USER 		= "root";
 	const DB_PASSWORD 	= "Password#1";
-	const DB 			= "test_mb";
-	const FRONTEND_URL  = "http://13.59.231.78/app/web/";		
+	const DB 			= "sample_db";
+	const FRONTEND_URL  = "http://13.59.231.78/mobiotics_backend_assignment/web/";		
 
 	private $_db = NULL;
 

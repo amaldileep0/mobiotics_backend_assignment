@@ -4,8 +4,8 @@ $(function () {
     //div
 	var requestListingDiv = $('#_request_listing');
 	var createRequestDiv  = $('#_create_request');
-    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
-    var homeUrl = "http://13.59.231.78/app/web/"
+    var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
+    var homeUrl = "http://13.59.231.78/mobiotics_backend_assignment/web/"
 
     function getRequestData()
     {   
