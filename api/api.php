@@ -11,9 +11,9 @@ class API extends REST
 	public $data = "";
 	const DB_SERVER 	= "localhost";
 	const DB_USER 		= "root";
-	const DB_PASSWORD 	= "pass";
+	const DB_PASSWORD 	= "Password#1";
 	const DB 			= "test_mb";
-	const FRONTEND_URL  = "http://ass.com/";		
+	const FRONTEND_URL  = "http://13.59.231.78/app/web/";		
 
 	private $_db = NULL;
 

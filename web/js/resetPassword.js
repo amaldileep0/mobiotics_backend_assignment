@@ -1,6 +1,6 @@
 $(function () {
     "use strict";
-    var ajaxBaseUrl = "http://api.ass.com/";
+    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
 
     function getQueryParams() {
 	    var params = {},

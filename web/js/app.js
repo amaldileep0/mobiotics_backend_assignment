@@ -5,8 +5,8 @@ $(function () {
 	var registerDiv = $('#_register');
 	var forgetPasswordDiv = $('#_forget_password');
 	var resetPasswordDiv = $('#_reset_password');
-    var ajaxBaseUrl = "http://api.ass.com/";
-    var homeUrl = "http://ass.com/";
+    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
+    var homeUrl = "http://13.59.231.78/app/web/"
 
     $('#login-form').submit(function(e) {
         e.preventDefault();

@@ -4,8 +4,8 @@ $(function () {
     //div
 	var requestListingDiv = $('#_request_listing');
 	var createRequestDiv  = $('#_create_request');
-    var ajaxBaseUrl = "http://api.ass.com/";
-    var homeUrl = "http://ass.com/"
+    var ajaxBaseUrl = "http://13.59.231.78/app/api/";
+    var homeUrl = "http://13.59.231.78/app/web/"
 
     function getRequestData()
     {   
