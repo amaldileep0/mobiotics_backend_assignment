@@ -12,7 +12,8 @@ class API extends REST
 	const DB_SERVER 	= "localhost";
 	const DB_USER 		= "root";
 	const DB_PASSWORD 	= "pass";
-	const DB 			= "test_mb";		
+	const DB 			= "test_mb";
+	const FRONTEND_URL  = "http://ass.com/";		
 
 	private $_db = NULL;
 
@@ -457,6 +458,7 @@ class API extends REST
 					$headers .= 'From: <noreply@example.com>' . "\r\n";
 					$subject = "Forget password";
 					$to = $email;
+					$link = self::FRONTEND_URL . "reset-password.html?token=" .$passwordResetToken;
 					$message = '<html>
 							<body>
 								<table width="100%" border="0" >		  
@@ -476,7 +478,7 @@ class API extends REST
 									<td align="center" colspan="3">&nbsp;</td>
 								  </tr>	
 								  <tr>
-									<td align="left">http://'.$_SERVER["HTTP_HOST"].'/resetpassword.php?token='.$passwordResetToken.'</td>
+									<td align="left">'.$link.'</td>
 								  </tr>	
 								  <tr>
 									<td align="center" colspan="3">&nbsp;</td>
@@ -497,11 +499,11 @@ class API extends REST
 					if ($sent) {
 						$result = [];
 						$result["success"] = true;
-						$result["message"] = "A password reset link is sent to your email.Please follow the instruction";					
+						$result["message"] = "A password reset link is sent to your email. Please follow the instruction";					
 						$this->response($this->json($result), 200);
 					} 
 				} 
-				$this->response($this->json(['success' => false, "message" => "Unable to process your request"]), 400);
+				$this->response($this->json(['success' => false, "message" => "Unable to send email.Please try again"]), 400);
 			}
 		} 
 		$this->response($this->json(['success' => false, "message" => "We're sorry, Couldn't find user associated with given email"]), 400);
@@ -542,11 +544,11 @@ class API extends REST
 				$update->bind_param("si", $password, $row['id']); 
 				$update->execute();
 				if ($update->affected_rows > 0) {
-					 $this->response($this->json(['success' => true, 'message' => 'Password changed  successfully' ]), 200);	
+					 $this->response($this->json(['success' => true, 'message' => 'Password changed successfully. Please login to continue' ]), 200);	
 				}
 			}
 		}
-		$this->response($this->json(['success' => false, 'message' => 'Unable to process your request']), 400);
+		$this->response($this->json(['success' => false, 'message' => 'Invalid password reset token']), 400);
 	}
 
 	protected function validatePasswordResetToken($token)
@@ -557,7 +559,17 @@ class API extends REST
 
         $timestamp = (int) substr($token, strrpos($token, '_') + 1);
         $expire = 3600;
-        return $timestamp + $expire >= time();
+        if ($timestamp + $expire < time()) {
+        	return false;
+        }
+        $stmt = $this->_db->prepare("SELECT * FROM users WHERE passwordResetToken = ? AND status = 1");
+		$stmt->bind_param("s", $token);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if ($result->num_rows == 0) {
+			return false;
+		}
+		return true;
 	}
 	
 	private function addRequest()
@@ -592,7 +604,7 @@ class API extends REST
         }
 		
 		if(!empty($error)) {
-			$this->response($this->json(["success" => false,"error" => $error]), 400);	
+			$this->response($this->json(["success" => false, "error" => $error]), 400);	
 		}
 
 		if(($priority = $this->getRequestPriority($fields['priority']['value'])) !== null) {
@@ -607,6 +619,11 @@ class API extends REST
 		} else {
 			$error['message'][] = "Invalid Request Status";
 			$this->response($this->json(["success" => false, "error" => $error]), 400);	
+		}
+
+		if (!empty($fields['initiatorEmail']['value']) && !filter_var($fields['initiatorEmail']['value'], FILTER_VALIDATE_EMAIL)) {
+			$error['message'][] = "Invalid Initiator Email";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);
 		}
 
 		$stmt = $this->_db->prepare("INSERT INTO request 
@@ -697,32 +714,40 @@ class API extends REST
 			'closedDate' => ['required' => true], 
 			'created' => ['required' => true]
 		];
+		
 		foreach ($fields  as $key => $field) {
-            if (array_key_exists($key, $this->_request)) {
-            	if(!in_array($key, ['closedDate','created'])) {
+            if (array_key_exists($key, $this->_request) && !empty($this->_request[$key])) {
+            	if(!in_array($key, ['closedDate', 'created'])) {
             		$fields[$key]['value'] = $this->_request[$key];
             	} else {
             		$fields[$key]['value'] = strtotime($this->_request[$key]);
             	}
             } else if($field['required']) {
-            	$error[$key]['message'] = ucwords($key). " must not be blank";
+            	$error['message'][] = ucwords($key). " must not be blank";
             }
         }
 		
 		if(!empty($error)) {
-			$this->response($this->json(["success" => false,"error" => $error]), 400);	
+			$this->response($this->json(["success" => false, "error" => $error]), 400);	
 		}
 
 		if(($priority = $this->getRequestPriority($fields['priority']['value'])) !== null) {
 			$fields['priority']['value'] = $priority;
 		} else {
-			$this->response($this->json(["success" => false, "error" => ['priority' => ['message' => 'Invalid Priority']] ]), 400);		
+			$error['message'][] = "Invalid Priority";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);		
 		}
 
 		if(($status = $this->getRequestStatus($fields['requestStatus']['value'])) !== null) {
 			$fields['requestStatus']['value'] = $status;
 		} else {
-			$this->response($this->json(["success" => false, "error" => ['requestStatus' => ['message' => 'Invalid Status']] ]), 400);	
+			$error['message'][] = "Invalid Request Status";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);	
+		}
+
+		if (!empty($fields['initiatorEmail']['value']) && !filter_var($fields['initiatorEmail']['value'], FILTER_VALIDATE_EMAIL)) {
+			$error['message'][] = "Invalid Initiator Email";
+			$this->response($this->json(["success" => false, "error" => $error]), 400);
 		}
 
 		$stmt = $this->_db->prepare(
@@ -755,8 +780,8 @@ class API extends REST
 			$requestId
 		);
 
-		$stmt->execute();
-		if ($stmt->affected_rows > 0) {
+		$t = $stmt->execute();
+		if ($t) {
 			$result["success"] = true;
 			$result["message"] = "Your request has been successfully updated";
 			$this->response($this->json($result), 200);	
@@ -780,8 +805,8 @@ class API extends REST
  				$result[$key]['assignee'] = $value['assignee']; 
  				$result[$key]['priority'] = $this->getRequestPriority($value['priority'], true);
  				$result[$key]['requestStatus'] = $this->getRequestStatus($value['requestStatus'], true);
- 				$result[$key]['closed'] = date('d/M/Y', $value['closed']);
- 				$result[$key]['created'] =  date('d/M/Y', $value['created']);
+ 				$result[$key]['closed'] = date('d-M-Y', $value['closed']);
+ 				$result[$key]['created'] =  date('d-M-Y', $value['created']);
  			}
 		}
 		$this->response($this->json([ "success" => true ,"data" => $result]), 200);
@@ -835,8 +860,8 @@ class API extends REST
  				$response['assignee'] = $row['assignee']; 
  				$response['priority'] = $this->getRequestPriority($row['priority'], true);
  				$response['requestStatus'] = $this->getRequestStatus($row['requestStatus'], true);
- 				$response['closed'] = date('d/M/Y', $row['closed']);
- 				$response['created'] =  date('d/M/Y', $row['created']);
+ 				$response['closedDate'] = date('m/d/Y', $row['closed']);
+ 				$response['created'] =  date('m/d/Y', $row['created']);
 			}
 		}
 		$this->response($this->json([ "success" => true, "data" => $response]), 200);

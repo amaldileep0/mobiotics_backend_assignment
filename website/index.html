@@ -14,9 +14,19 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <title>TEST</title>
+    <script type="text/javascript">
+        if (localStorage.getItem("_identity") !== null) {
+            var identity = localStorage.getItem("_identity");
+            var user = JSON.parse(identity);
+            if(user.token.length) {
+                window.location.replace("dashboard.html");
+            }
+        }
+    </script>
 </head>
 
 <body>
+    <div class="loader"></div>
     <nav class="navbar navbar-expand-lg navbar-light navbar-laravel">
         <div class="container">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

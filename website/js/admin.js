@@ -1,12 +1,11 @@
 $(function () {
     "use strict";
+
     //div
 	var requestListingDiv = $('#_request_listing');
 	var createRequestDiv  = $('#_create_request');
-
     var ajaxBaseUrl = "http://api.ass.com/";
     var homeUrl = "http://ass.com/"
-
 
     function getRequestData()
     {   
@@ -49,28 +48,49 @@ $(function () {
     }
 
     $(document).on("click", "#delete-request", function() {
-        $.post(ajaxBaseUrl + "deleterequest",
-        {
-            id: $(this).data("id")
-        },
-        function(data, status) {
-            if (data.success) {
-                location.reload();
+        var requestId = $(this).data("id");
+        bootbox.confirm({
+            message: "Do you want to delete this item?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result) {
+                    $.post(ajaxBaseUrl + "deleterequest",{
+                        id: requestId
+                    }, function(data, status) {
+                        location.reload();
+                    });
+                }
             }
         });
     });
 
+    $(document).on("click", ".logout_link", function() {
+        localStorage.removeItem('_identity');
+        window.location.replace(homeUrl + "index.html");
+    });
+
     $(document).on("click", "#edit-request", function() {
         var url = ajaxBaseUrl + "getRequest?id="+$(this).data("id")
+        $("form#create-request-form").prop('name','editRequestForm');
         $("form#create-request-form").prop('id','edit-request-form');
+        document.getElementById('edit-request-form').reset();
         $('.modal-title').text('Update Request')
         $(".request-form-submit").html('Update');
-        $('<input>').attr({type: 'hidden',id: 'request-id', name: 'id'}).appendTo('#edit-request-form');
+        $('<input>').attr({type: 'hidden',id: 'id', name: 'id'}).appendTo('#edit-request-form');
         $.get( url, function( response ) {
             if (response.success) {
                 $.each(response.data, function (key, val) {
-                    $('#title').val('tst')
-                    $("input[name='"+ key +"']").val(val);
+                    var sel = "#" + key;
+                    $(sel).val(val);
                 });
                 $('#createRequestModal').modal('show');
             }
@@ -78,14 +98,17 @@ $(function () {
     });
 
     $("#createRequestModal").on("hidden.bs.modal", function () {
-        document.getElementById('edit-request-form').reset();
-        $('#request-id').remove();
-        $("form#create-request-form").prop('id', 'create-request-form');
-        $('.modal-title').text('Create New Request')
-        $(".request-form-submit").html('Submit');
+       if(($('#edit-request-form').length)) {
+            document.getElementById('edit-request-form').reset();
+            $('#request-id').remove();
+            $("form#edit-request-form").prop('name','createRequestForm');
+            $("form#edit-request-form").prop('id', 'create-request-form');
+            $('.modal-title').text('Create New Request')
+            $(".request-form-submit").html('Submit');
+        }
     });
 
-    $('#create-request-form').submit(function(e) {
+    $(document).on("submit", "#create-request-form", function(e) {
         e.preventDefault();
         $.ajax({
             type: "POST",
@@ -93,7 +116,28 @@ $(function () {
             data: $(this).serialize(),
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
-                    var message = (response.message) ? response.message : "Successfully processed your request";
+                    var message = (response.message) ? response.message : "Successfully added your request";
+                    window.location.replace(homeUrl + "dashboard.html");
+                } else {
+                    var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
+                    showErrors(error)
+                }
+            },
+            error: function(er) {
+
+            }
+       });
+    });
+
+    $(document).on("submit", "#edit-request-form", function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: ajaxBaseUrl + "updaterequest?id=" + $('#id').val(),
+            data: $(this).serialize(),
+            success: function(response) {
+                if (typeof(response) !== 'undefined' && response.success) {
+                    var message = (response.message) ? response.message : "Successfully updated your request";
                     window.location.replace(homeUrl + "dashboard.html");
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
@@ -149,7 +193,7 @@ $(function () {
 
     $( document ).ready(function() {
         getRequestData();
-        $( "#closed" ).datepicker();
+        $( "#closedDate" ).datepicker();
         $( "#created" ).datepicker();
     });
 
