@@ -1,0 +1,9 @@
+{
+	"environment": {
+	    "mysql_server" : "localhost",
+	    "mysql_username" : "root",
+	    "mysql_password" : "Password#1",
+	    "mysql_schema" : "sample_db",
+	    "frontend_url" : "http://13.59.231.78/mobiotics_backend_assignment/web/"
+  	}
+}
