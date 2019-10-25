@@ -499,7 +499,7 @@ class API extends REST
 		        ->setPort($port)
 		        ->setEncryption($encryption);
 
-	        $subject = "Passwors reset link";
+	        $subject = "Reset Password Link";
 			// Create the Mailer using your created Transport
 			$mailer = Swift_Mailer::newInstance($transport);
 			// Create a message
@@ -517,7 +517,7 @@ class API extends REST
 									<td align="center" colspan="3">&nbsp;</td>
 								  </tr>	
 								  <tr>
-									<td align="left" colspan="3">You have requested for the Password on APP. Click the below link to reset your password:</td>
+									<td align="left" colspan="3">You have requested for the Password reset. Click on the below link to reset your password:</td>
 								  </tr>	
 								  <tr>
 									<td align="center" colspan="3">&nbsp;</td>
