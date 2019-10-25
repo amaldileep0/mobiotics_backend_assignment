@@ -1,20 +1,21 @@
 $(function () {
     "use strict";
 
-    //div
 	var requestListingDiv = $('#_request_listing');
 	var createRequestDiv  = $('#_create_request');
     var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
+    var token = JSON.parse(localStorage.getItem("_identity")).token;
     function getRequestData()
     {   
         $.ajax({
             type: "GET",
             url: ajaxBaseUrl + "listrequest",
             data: $(this).serialize(),
+            beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
             success: function(response) {
-                if (typeof(response) !== 'undefined') {
+                if (typeof(response) !== 'undefined' && response.success) {
                     var content = '';
-                    if (response.success && response.data.length > 0) {
+                    if (response.data.length > 0) {
                         var data = response.data;
                         for (var i = 0; i < data.length; i++) {
                             content += '<tr>';
@@ -37,6 +38,10 @@ $(function () {
                         content += '</tr>';
                     }
                     $('#request-listing-table tbody').html(content);
+                } else if(response.hasOwnProperty('statusCode') && response.statusCode == 401) {
+                    window.location.replace("index.html");
+                } else {
+                    showErrors(response)
                 }
             },
             error: function(er) {
@@ -61,11 +66,21 @@ $(function () {
             },
             callback: function (result) {
                 if(result) {
-                    $.post(ajaxBaseUrl + "deleterequest",{
-                        id: requestId
-                    }, function(data, status) {
-                        location.reload();
+                    $.ajax({
+                        type: "POST",
+                        url: ajaxBaseUrl + "deleterequest",
+                        data: { "id" : requestId},
+                        beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
+                        success: function(response) {
+                            if (typeof(response) !== 'undefined' && response.success) {
+                                location.reload();
+                            }
+                        },
+                        error: function(er) {
+
+                        }
                     });
+
                 }
             }
         });
@@ -84,13 +99,25 @@ $(function () {
         $('.modal-title').text('Update Request')
         $(".request-form-submit").html('Update');
         $('<input>').attr({type: 'hidden',id: 'id', name: 'id'}).appendTo('#edit-request-form');
-        $.get( url, function( response ) {
-            if (response.success) {
-                $.each(response.data, function (key, val) {
-                    var sel = "#" + key;
-                    $(sel).val(val);
-                });
-                $('#createRequestModal').modal('show');
+        $.ajax({
+            type: "GET",
+            url: url,
+            beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
+            success: function(response) {
+                if (typeof(response) !== 'undefined' && response.success) {
+                    $.each(response.data, function (key, val) {
+                        var sel = "#" + key;
+                        $(sel).val(val);
+                    });
+                    $('#createRequestModal').modal('show');
+                } else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
+                    window.location.replace("index.html");
+                } else {
+                    showErrors(response)
+                }
+            },
+            error: function(er) {
+
             }
         });
     });
@@ -112,17 +139,21 @@ $(function () {
             type: "POST",
             url: ajaxBaseUrl + "addrequest",
             data: $(this).serialize(),
+            beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully added your request";
                     window.location.replace("dashboard.html");
+                } else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
+                    window.location.replace("index.html");
+                }  else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
+                    window.location.replace("index.html");
                 } else {
-                    var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
-                    showErrors(error)
+                    showErrors(response)
                 }
             },
             error: function(er) {
-
+                console.log(er)
             }
        });
     });
@@ -133,17 +164,19 @@ $(function () {
             type: "POST",
             url: ajaxBaseUrl + "updaterequest?id=" + $('#id').val(),
             data: $(this).serialize(),
+            beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
             success: function(response) {
-                if (typeof(response) !== 'undefined' && response.success) {
+                if (response.success) {
                     var message = (response.message) ? response.message : "Successfully updated your request";
                     window.location.replace("dashboard.html");
+                }  else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
+                    window.location.replace("index.html");
                 } else {
-                    var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
-                    showErrors(error)
+                    showErrors(response)
                 }
             },
             error: function(er) {
-
+                console.log(er)
             }
        });
     });
@@ -151,7 +184,7 @@ $(function () {
     function showErrors(response)
     {
         clearMessage();
-        var errors = response.message
+        var errors = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
         if (errors) {
             if (_.isString(errors))
                 errors = [errors];

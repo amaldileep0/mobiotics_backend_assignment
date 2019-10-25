@@ -2,6 +2,8 @@
 
 header("Content-type: application/json");
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: *");
+
 
 require_once("Rest.inc.php");
 require_once("StringHelper.php");
@@ -49,9 +51,16 @@ class API extends REST
 	public function run()
 	{ 	
 
-		$action = trim($_REQUEST['type']);
+		$action = strtolower(trim($_REQUEST['type']));
+		$authRequired = ["addrequest", 'updaterequest', 'listrequest', 'getrequest', 'deleterequest'];
+		if (in_array($action, $authRequired)) {
+			if (!$this->customAuth()) {
+				$this->response($this->json(['success' => false, "message" => "Authentication failed. Please login again", 'statusCode' => 401]), 401);
+			}	
+		}
+
 		if (!empty($action)) { 	 
-			switch (strtolower($action)) {
+			switch ($action) {
 				case 'login':
 					$this->login();
 					break;
@@ -84,6 +93,24 @@ class API extends REST
 					break;
 			}
 		}
+	}
+	
+	protected function customAuth()
+	{
+		$token = isset($_SERVER['HTTP_AUTH_TOKEN']) ? $_SERVER['HTTP_AUTH_TOKEN'] : null;
+		if ($token) {
+			$stmt = $this->_db->prepare("SELECT * FROM users WHERE api_token = ? AND status = 1");
+			$stmt->bind_param("s", $token);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			if($result->num_rows > 0 ) {
+				while($row = $result->fetch_assoc()) {
+					$this->sessionStart($row['id'], $row['email'], $row['name']);
+					return true;
+				}
+			}	
+		}
+		return false;
 	}
 	
 	private function signup()
@@ -411,7 +438,6 @@ class API extends REST
 					$update->execute();
 					if ($update->affected_rows > 0) {
 						$response['token'] = $apiToken;
-						$this->sessionStart($response['userId'], $response['email'], $response['name']);
 						$this->response($this->json([ "success" => true ,"user" => $response]), 200);
 					} else {
 						$error = ['success' => false, "message" => "Sorry!. Something didn't go as planned"];
@@ -678,11 +704,12 @@ class API extends REST
 				assignee,
 				priority,
 				requestStatus,
+				createdBy,
 				created,
 				closed
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				   
-		$stmt->bind_param("sssssssii",
+		$stmt->bind_param("sssssssiii",
 			$fields['title']['value'],
 			$fields['category']['value'],
 			$fields['initiator']['value'],
@@ -690,6 +717,7 @@ class API extends REST
 			$fields['assignee']['value'],
 			$fields['priority']['value'],
 			$fields['requestStatus']['value'],
+			$_SESSION['USERID'],
 			$fields['created']['value'],
 			$fields['closedDate']['value']
 		);
@@ -834,7 +862,8 @@ class API extends REST
 	
 	private function listRequest()
 	{
-		$stmt = $this->_db->prepare("SELECT * FROM request ORDER BY id DESC");
+		$stmt = $this->_db->prepare("SELECT * FROM request WHERE createdBy = ? ORDER BY id DESC");
+		$stmt->bind_param("i", $_SESSION['USERID']);
 		$stmt->execute();
 		$arr = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 		$result = [];
