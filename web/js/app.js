@@ -38,9 +38,9 @@ $(function () {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully processed your request";
                     bootbox.alert({
-                    message: message,
-                    callback: function () {
-                        window.location.replace("index.html");
+                        message: message,
+                        callback: function () {
+                            window.location.replace("index.html");
                         }
                     })
                 } else {
