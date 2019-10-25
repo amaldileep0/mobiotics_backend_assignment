@@ -37,7 +37,12 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully processed your request";
-                    window.location.replace("index.html");
+                    bootbox.alert({
+                    message: message,
+                    callback: function () {
+                        window.location.replace("index.html");
+                        }
+                    })
                 } else {
                     var error = (response.message) ? response.message : (response.error) ? response.error : "Something went wrong";
                     showErrors(error)

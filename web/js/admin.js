@@ -53,7 +53,7 @@ $(function () {
     $(document).on("click", "#delete-request", function() {
         var requestId = $(this).data("id");
         bootbox.confirm({
-            message: "Do you want to delete this item?",
+            message: "Do you want to delete this request?",
             buttons: {
                 confirm: {
                     label: 'Yes',
@@ -73,7 +73,12 @@ $(function () {
                         beforeSend: function(xhr){xhr.setRequestHeader('AUTH_TOKEN', token);},
                         success: function(response) {
                             if (typeof(response) !== 'undefined' && response.success) {
-                                location.reload();
+                                bootbox.alert({
+                                    message: "The request has been removed successfully",
+                                    callback: function () {
+                                        location.reload();
+                                    }
+                                })
                             }
                         },
                         error: function(er) {
@@ -143,7 +148,12 @@ $(function () {
             success: function(response) {
                 if (typeof(response) !== 'undefined' && response.success) {
                     var message = (response.message) ? response.message : "Successfully added your request";
-                    window.location.replace("dashboard.html");
+                    bootbox.alert({
+                        message: message,
+                        callback: function () {
+                            window.location.replace("dashboard.html");
+                        }
+                    })
                 } else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
                     window.location.replace("index.html");
                 }  else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
@@ -168,7 +178,12 @@ $(function () {
             success: function(response) {
                 if (response.success) {
                     var message = (response.message) ? response.message : "Successfully updated your request";
-                    window.location.replace("dashboard.html");
+                    bootbox.alert({
+                        message: message,
+                        callback: function () {
+                            window.location.replace("dashboard.html");
+                        }
+                    })
                 }  else if (response.hasOwnProperty('statusCode') && response.statusCode == 401) {
                     window.location.replace("index.html");
                 } else {
