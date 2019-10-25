@@ -8,27 +8,41 @@ require_once("StringHelper.php");
 
 class API extends REST 
 {
-	public $data = "";
-	const DB_SERVER 	= "localhost";
-	const DB_USER 		= "root";
-	const DB_PASSWORD 	= "Password#1";
-	const DB 			= "sample_db";
-	const FRONTEND_URL  = "http://13.59.231.78/mobiotics_backend_assignment/web/";		
-
+	private static $settings;
 	private $_db = NULL;
+	private $_frontend_url;		
 
 	public function __construct()
 	{
 		parent::__construct();	// Init parent contructor
+		self::systemInit();
+		$this->_frontend_url = isset(self::$settings->environment->frontend_url) ? self::$settings->environment->frontend_url: "";
 		$this->dbConnection();	// Initiate Database connection
 	}
+
+	public static function systemInit()
+    {
+        if (!self::$settings) {
+            self::$settings = json_decode(file_get_contents(__DIR__ . '/config/config.json'),true);
+            $s = self::$settings;
+            self::$settings = json_decode(json_encode($s));
+        }
+    }
 		
 	private function dbConnection()
-	{
-		$this->_db = mysqli_connect(self::DB_SERVER, self::DB_USER, self::DB_PASSWORD, self::DB);
-		if (mysqli_connect_errno()) {
-			die("Failed to connect to MySQL: " . mysqli_connect_error());
-		}			
+	{	
+		if (self::$settings) {
+			$db_server = isset(self::$settings->environment->mysql_server) ? self::$settings->environment->mysql_server: "";
+			$db_user = isset(self::$settings->environment->mysql_username) ? self::$settings->environment->mysql_username : "";
+			$db_password = isset(self::$settings->environment->mysql_password) ? self::$settings->environment->mysql_password : "";
+			$schema = isset(self::$settings->environment->mysql_schema) ? self::$settings->environment->mysql_schema : "";
+			$this->_db = mysqli_connect($db_server, $db_user, $db_password, $schema);
+			if (mysqli_connect_errno()) {
+				die("Failed to connect to MySQL: " . mysqli_connect_error());
+			}	
+		} else {
+			$this->response($this->json(['success' => false, "message" => "Please configure application settings.Please contact administrator"]), 500);
+		}		
 	}
 
 	public function run()
@@ -452,13 +466,13 @@ class API extends REST
 				$update->bind_param("si", $passwordResetToken, $row['id']); 
 				$update->execute();
 				if ($update->affected_rows > 0) {
-					$adminEmail = "amaldileep0@gmail.com";
+					$adminEmail = "amaldileep92@gmail.com";
 					$headers = "MIME-Version: 1.0" . "\r\n";
 					$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 					$headers .= 'From: <noreply@example.com>' . "\r\n";
 					$subject = "Forget password";
 					$to = $email;
-					$link = self::FRONTEND_URL . "reset-password.html?token=" .$passwordResetToken;
+					$link = $this->_frontend_url . "reset-password.html?token=" .$passwordResetToken;
 					$message = '<html>
 							<body>
 								<table width="100%" border="0" >		  
