@@ -5,6 +5,7 @@ header("Access-Control-Allow-Origin: *");
 
 require_once("Rest.inc.php");
 require_once("StringHelper.php");
+require_once("lib/swift_required.php");
 
 class API extends REST 
 {
@@ -466,14 +467,44 @@ class API extends REST
 				$update->bind_param("si", $passwordResetToken, $row['id']); 
 				$update->execute();
 				if ($update->affected_rows > 0) {
-					$adminEmail = "amaldileep92@gmail.com";
-					$headers = "MIME-Version: 1.0" . "\r\n";
-					$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-					$headers .= 'From: <noreply@example.com>' . "\r\n";
-					$subject = "Forget password";
-					$to = $email;
 					$link = $this->_frontend_url . "reset-password.html?token=" .$passwordResetToken;
-					$message = '<html>
+					$sent = $this->sendPasswordResetEmail($email, $name, $link);	
+					if ($sent) {
+						$result = [];
+						$result["success"] = true;
+						$result["message"] = "A password reset link is sent to your email. Please follow the instruction";					
+						$this->response($this->json($result), 200);
+					} 
+				} 
+				$this->response($this->json(['success' => false, "message" => "Unable to send email.Please try again"]), 400);
+			}
+		} 
+		$this->response($this->json(['success' => false, "message" => "We're sorry, Couldn't find user associated with given email"]), 400);
+	}
+
+	protected function sendPasswordResetEmail($to, $name, $link) 
+	{	
+
+		if($to && $name) {
+			$host = isset(self::$settings->mail->host) ? self::$settings->mail->host: "";
+			$username = isset(self::$settings->mail->username) ? self::$settings->mail->username : "";
+			$password = isset(self::$settings->mail->password) ? self::$settings->mail->password : "";
+			$port = isset(self::$settings->mail->port) ? self::$settings->mail->port : "";
+			$encryption = isset(self::$settings->mail->encryption) ? self::$settings->mail->encryption : "";
+
+			$transport = Swift_SmtpTransport::newInstance()
+				->setHost($host)
+				->setUsername($username)
+				->setPassword($password)
+		        ->setPort($port)
+		        ->setEncryption($encryption);
+
+	        $subject = "Passwors reset link";
+			// Create the Mailer using your created Transport
+			$mailer = Swift_Mailer::newInstance($transport);
+			// Create a message
+			$message = Swift_Message::newInstance($subject);
+			$mailContent ='<html>
 							<body>
 								<table width="100%" border="0" >		  
 								  <tr>
@@ -509,18 +540,16 @@ class API extends REST
 								</table>
 						</body>
 					</html>';
-					$sent = mail($to, $subject, $message, $headers,"-f ".$adminEmail."");	
-					if ($sent) {
-						$result = [];
-						$result["success"] = true;
-						$result["message"] = "A password reset link is sent to your email. Please follow the instruction";					
-						$this->response($this->json($result), 200);
-					} 
-				} 
-				$this->response($this->json(['success' => false, "message" => "Unable to send email.Please try again"]), 400);
+		
+			$message->setBody($mailContent,'text/html')->setFrom(array($to => $name))->setTo(array($to));
+			// Send the message
+			$result = $mailer->send($message);
+			if ($result) {
+				return true;
 			}
 		} 
-		$this->response($this->json(['success' => false, "message" => "We're sorry, Couldn't find user associated with given email"]), 400);
+		return false;
+	
 	}
 	
 	private function resetPassword()

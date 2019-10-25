@@ -6,7 +6,7 @@ $(function () {
 	var forgetPasswordDiv = $('#_forget_password');
 	var resetPasswordDiv = $('#_reset_password');
     var ajaxBaseUrl = "http://13.59.231.78/mobiotics_backend_assignment/api/";
-   
+
     $('#login-form').submit(function(e) {
         e.preventDefault();
         $.ajax({

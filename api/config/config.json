@@ -5,5 +5,12 @@
 	    "mysql_password" : "Password#1",
 	    "mysql_schema" : "sample_db",
 	    "frontend_url" : "http://13.59.231.78/mobiotics_backend_assignment/web/"
+  	},
+  	"mail":{
+  		"host" : "smtp.gmail.com",
+  		"username" : "amaldileep92@gmail.com",
+  		"password": "Password#14557",
+  		"port": 587,
+  		"encryption": "tls"
   	}
 }
